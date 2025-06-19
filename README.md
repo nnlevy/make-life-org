@@ -23,7 +23,8 @@ track of joint to-dos, conversation prompts and short notes from each partner.
 Use it for daily habits like taking multivitamins or exercising together. Add
 prompts to tackle important topics such as finances, division of childcare or
 career plans. Both partners can attach notes from their own perspective and view
-curated content for their role in the journey.
+curated content for their role in the journey. The API also returns a "team
+score" so you can track how many tasks you have completed together.
 
 ### API
 
@@ -42,6 +43,7 @@ You can also visit `/tandem/<name>?partner=<you>` in the browser to try the buil
 - `GET /pri/questions` – list PRI questions
 - `GET /pri?partner=<name>` – fetch readiness score
 - `POST /pri?partner=<name>` – submit `{ questionId, score }`
+- `GET /score` – overall team score based on completed todos
 
 ## Getting Started
 

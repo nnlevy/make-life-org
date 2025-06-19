@@ -138,6 +138,7 @@ function TandemApp() {
   const [content, setContent] = useState<PartnerContent[]>([]);
   const [questions, setQuestions] = useState<PRIQuestion[]>([]);
   const [priScore, setPriScore] = useState<number>(0);
+  const [teamScore, setTeamScore] = useState<number>(0);
 
   async function refresh() {
     const todoRes = await fetch(`/parties/tandem/${name}/todos`);
@@ -162,6 +163,9 @@ function TandemApp() {
     const scoreRes = await fetch(`/parties/tandem/${name}/pri?partner=${partner}`);
     const scoreData = await scoreRes.json();
     setPriScore(scoreData.score as number);
+    const teamRes = await fetch(`/parties/tandem/${name}/score`);
+    const teamData = await teamRes.json();
+    setTeamScore(teamData.score as number);
   }
 
   useEffect(() => {
@@ -175,6 +179,9 @@ function TandemApp() {
     });
     const item = (await res.json()) as TodoItem;
     setTodos((t) => [...t, item]);
+    const teamRes = await fetch(`/parties/tandem/${name}/score`);
+    const teamData = await teamRes.json();
+    setTeamScore(teamData.score as number);
   }
 
   async function toggleTodo(t: TodoItem) {
@@ -184,6 +191,9 @@ function TandemApp() {
     });
     const item = (await res.json()) as TodoItem;
     setTodos((tds) => tds.map((todo) => (todo.id === item.id ? item : todo)));
+    const teamRes = await fetch(`/parties/tandem/${name}/score`);
+    const teamData = await teamRes.json();
+    setTeamScore(teamData.score as number);
   }
 
   async function addNote(text: string) {
@@ -269,7 +279,8 @@ function TandemApp() {
         <input type="text" name="note" placeholder="Add a note" />
         <button type="submit">Add</button>
       </form>
-      <h4 style={{ marginTop: "2rem" }}>Readiness Score: {priScore}</h4>
+      <h4 style={{ marginTop: "2rem" }}>Team Score: {teamScore}</h4>
+      <h4 style={{ marginTop: "1rem" }}>Readiness Score: {priScore}</h4>
       <ul>
         {questions.map((q) => (
           <li key={q.id}>

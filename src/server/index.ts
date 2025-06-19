@@ -283,6 +283,14 @@ export class Tandem extends Server<Env> {
         return Response.json({ ok: true });
       }
     }
+    if (parts[0] === "score" && request.method === "GET") {
+      if (!this.todos.length) {
+        return Response.json({ score: 0 });
+      }
+      const completed = this.todos.filter((t) => t.completed).length;
+      const score = Math.round((completed / this.todos.length) * 100);
+      return Response.json({ score });
+    }
     return new Response("Not Found", { status: 404 });
   }
 }
