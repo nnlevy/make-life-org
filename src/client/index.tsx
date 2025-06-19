@@ -17,6 +17,7 @@ import {
   type TodoItem,
   type Prompt,
   type PartnerNote,
+  type PartnerContent,
 } from "../shared";
 
 function App() {
@@ -133,6 +134,7 @@ function TandemApp() {
   const [todos, setTodos] = useState<TodoItem[]>([]);
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [notes, setNotes] = useState<PartnerNote[]>([]);
+  const [content, setContent] = useState<PartnerContent[]>([]);
 
   async function refresh() {
     const todoRes = await fetch(`/parties/tandem/${name}/todos`);
@@ -146,6 +148,11 @@ function TandemApp() {
     );
     const noteData = await noteRes.json();
     setNotes(noteData.notes as PartnerNote[]);
+    const contentRes = await fetch(
+      `/parties/tandem/${name}/content?partner=${partner}`,
+    );
+    const contentData = await contentRes.json();
+    setContent(contentData.content as PartnerContent[]);
   }
 
   useEffect(() => {
@@ -242,6 +249,12 @@ function TandemApp() {
         <input type="text" name="note" placeholder="Add a note" />
         <button type="submit">Add</button>
       </form>
+      <h4 style={{ marginTop: "2rem" }}>Content for {partner}</h4>
+      <ul>
+        {content.map((c) => (
+          <li key={c.id}>{c.text}</li>
+        ))}
+      </ul>
     </div>
   );
 }

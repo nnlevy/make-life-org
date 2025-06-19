@@ -22,7 +22,8 @@ The `Tandem` durable object stores data for a shared "tandem" account. It keeps
 track of joint to-dos, conversation prompts and short notes from each partner.
 Use it for daily habits like taking multivitamins or exercising together. Add
 prompts to tackle important topics such as finances, division of childcare or
-career plans. Both partners can attach notes from their own perspective.
+career plans. Both partners can attach notes from their own perspective and view
+curated content for their role in the journey.
 
 ### API
 
@@ -36,6 +37,8 @@ You can also visit `/tandem/<name>?partner=<you>` in the browser to try the buil
 - `GET /prompts` – fetch discussion prompts
 - `GET /notes?partner=<name>` – list notes for a partner
 - `POST /notes?partner=<name>` – add `{ text: "..." }`
+- `GET /content?partner=<name>` – partner-specific tips and links
+- `POST /content?partner=<name>` – add new partner content
 
 ## Getting Started
 

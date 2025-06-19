@@ -70,3 +70,9 @@ export type PartnerNote = {
   partner: string;
   text: string;
 };
+
+export type PartnerContent = {
+  id: string;
+  partner: string;
+  text: string;
+};

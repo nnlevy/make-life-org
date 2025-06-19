@@ -6,7 +6,13 @@ import {
 } from "partyserver";
 
 import { nanoid } from "nanoid";
-import type { ChatMessage, Message, TodoItem, Prompt } from "../shared";
+import type {
+  ChatMessage,
+  Message,
+  TodoItem,
+  Prompt,
+  PartnerContent,
+} from "../shared";
 
 export class Chat extends Server<Env> {
   static options = { hibernate: true };
@@ -88,6 +94,13 @@ export class Tandem extends Server<Env> {
     { id: "career", text: "Share your career plans." },
   ];
   notes: { id: string; partner: string; text: string }[] = [];
+  contents: PartnerContent[] = [
+    {
+      id: "welcome",
+      partner: "default",
+      text: "Remember to support each other on this journey.",
+    },
+  ];
 
   onStart() {
     this.ctx.storage.sql.exec(
@@ -98,6 +111,9 @@ export class Tandem extends Server<Env> {
     );
     this.ctx.storage.sql.exec(
       `CREATE TABLE IF NOT EXISTS notes (id TEXT PRIMARY KEY, partner TEXT, text TEXT)`,
+    );
+    this.ctx.storage.sql.exec(
+      `CREATE TABLE IF NOT EXISTS contents (id TEXT PRIMARY KEY, partner TEXT, text TEXT)`,
     );
     this.todos = this.ctx.storage.sql
       .exec(`SELECT * FROM todos`)
@@ -118,6 +134,19 @@ export class Tandem extends Server<Env> {
     this.notes = this.ctx.storage.sql
       .exec(`SELECT * FROM notes`)
       .toArray() as unknown as { id: string; partner: string; text: string }[];
+
+    const savedContent = this.ctx.storage.sql
+      .exec(`SELECT * FROM contents`)
+      .toArray() as unknown as PartnerContent[];
+    if (savedContent.length === 0) {
+      for (const c of this.contents) {
+        this.ctx.storage.sql.exec(
+          `INSERT INTO contents (id, partner, text) VALUES ('${c.id}', '${c.partner}', ${JSON.stringify(c.text)})`,
+        );
+      }
+    } else {
+      this.contents = savedContent;
+    }
   }
 
   async onRequest(request: Request): Promise<Response> {
@@ -181,6 +210,31 @@ export class Tandem extends Server<Env> {
           )})`,
         );
         return Response.json(note);
+      }
+    }
+    if (parts[0] === "content") {
+      const partner = url.searchParams.get("partner") || "default";
+      if (request.method === "GET") {
+        return Response.json({
+          content: this.contents.filter(
+            (c) => c.partner === partner || c.partner === "default",
+          ),
+        });
+      }
+      if (request.method === "POST") {
+        const data: any = await request.json();
+        const contentItem: PartnerContent = {
+          id: nanoid(8),
+          partner,
+          text: data.text || "",
+        };
+        this.contents.push(contentItem);
+        this.ctx.storage.sql.exec(
+          `INSERT INTO contents (id, partner, text) VALUES ('${contentItem.id}', '${partner}', ${JSON.stringify(
+            contentItem.text,
+          )})`,
+        );
+        return Response.json(contentItem);
       }
     }
     return new Response("Not Found", { status: 404 });
