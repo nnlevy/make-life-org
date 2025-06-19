@@ -52,7 +52,22 @@ A live public deployment of this template is available at [https://durable-chat-
    ```bash
    npm install
    ```
-2. Deploy the project!
+2. Generate the worker type definitions. Rerun this anytime you change
+   `wrangler.json`:
+   ```bash
+   npm run cf-typegen
+   ```
+3. Test the worker locally in development mode:
+   ```bash
+   npm run dev
+   ```
+   This runs `wrangler dev` which compiles the client and serves the worker
+   on `http://localhost:8787`.
+4. Check that everything builds correctly:
+   ```bash
+   npm run check
+   ```
+5. Deploy the project!
    ```bash
    npx wrangler deploy
    ```
