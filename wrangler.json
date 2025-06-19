@@ -4,7 +4,7 @@
   "name": "make-life-org",
   "migrations": [
     {
-      "new_sqlite_classes": ["Chat"],
+      "new_sqlite_classes": ["Chat", "Tandem"],
       "tag": "v1"
     }
   ],
@@ -21,6 +21,10 @@
       {
         "class_name": "Chat",
         "name": "Chat"
+      },
+      {
+        "class_name": "Tandem",
+        "name": "Tandem"
       }
     ]
   },

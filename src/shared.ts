@@ -53,3 +53,14 @@ export const names = [
   "Yvonne",
   "Zoe",
 ];
+
+export type TodoItem = {
+  id: string;
+  content: string;
+  completed: boolean;
+};
+
+export type Prompt = {
+  id: string;
+  text: string;
+};

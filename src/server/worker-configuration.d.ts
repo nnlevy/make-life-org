@@ -3,9 +3,10 @@
 // Runtime types generated with workerd@1.20250508.0 2025-04-01 
 declare namespace Cloudflare {
 	interface Env {
-		Chat: DurableObjectNamespace<import("./index").Chat>;
-		ASSETS: Fetcher;
-	}
+                Chat: DurableObjectNamespace<import("./index").Chat>;
+                Tandem: DurableObjectNamespace<import("./index").Tandem>;
+                ASSETS: Fetcher;
+        }
 }
 interface Env extends Cloudflare.Env {}
 

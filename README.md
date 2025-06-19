@@ -16,6 +16,13 @@ The Durable Object instance that manages the chat room runs in one location, and
 
 <!-- dash-content-end -->
 
+## Tandem Accounts
+
+The `Tandem` durable object stores a shared to-do list and discussion prompts
+for partners. Use it to track joint habits like taking multivitamins or
+exercising, and to spark conversations about finances, childcare and career
+plans. Each partner can view the list and add items from their own perspective.
+
 ## Getting Started
 
 Outside of this repo, you can start a new project with this template using [C3](https://developers.cloudflare.com/pages/get-started/c3/) (the `create-cloudflare` CLI):
