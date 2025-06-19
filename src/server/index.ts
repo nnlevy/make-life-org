@@ -87,6 +87,7 @@ export class Tandem extends Server<Env> {
     { id: "childcare", text: "Plan division of childcare." },
     { id: "career", text: "Share your career plans." },
   ];
+  notes: { id: string; partner: string; text: string }[] = [];
 
   onStart() {
     this.ctx.storage.sql.exec(
@@ -94,6 +95,9 @@ export class Tandem extends Server<Env> {
     );
     this.ctx.storage.sql.exec(
       `CREATE TABLE IF NOT EXISTS prompts (id TEXT PRIMARY KEY, text TEXT)`,
+    );
+    this.ctx.storage.sql.exec(
+      `CREATE TABLE IF NOT EXISTS notes (id TEXT PRIMARY KEY, partner TEXT, text TEXT)`,
     );
     this.todos = this.ctx.storage.sql
       .exec(`SELECT * FROM todos`)
@@ -110,6 +114,10 @@ export class Tandem extends Server<Env> {
     } else {
       this.prompts = savedPrompts;
     }
+
+    this.notes = this.ctx.storage.sql
+      .exec(`SELECT * FROM notes`)
+      .toArray() as unknown as { id: string; partner: string; text: string }[];
   }
 
   async onRequest(request: Request): Promise<Response> {
@@ -155,6 +163,25 @@ export class Tandem extends Server<Env> {
     }
     if (parts[0] === "prompts" && request.method === "GET") {
       return Response.json({ prompts: this.prompts });
+    }
+    if (parts[0] === "notes") {
+      const partner = url.searchParams.get("partner") || "default";
+      if (request.method === "GET") {
+        return Response.json({
+          notes: this.notes.filter((n) => n.partner === partner),
+        });
+      }
+      if (request.method === "POST") {
+        const data: any = await request.json();
+        const note = { id: nanoid(8), partner, text: data.text || "" };
+        this.notes.push(note);
+        this.ctx.storage.sql.exec(
+          `INSERT INTO notes (id, partner, text) VALUES ('${note.id}', '${partner}', ${JSON.stringify(
+            note.text,
+          )})`,
+        );
+        return Response.json(note);
+      }
     }
     return new Response("Not Found", { status: 404 });
   }

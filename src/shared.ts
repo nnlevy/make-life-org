@@ -64,3 +64,9 @@ export type Prompt = {
   id: string;
   text: string;
 };
+
+export type PartnerNote = {
+  id: string;
+  partner: string;
+  text: string;
+};

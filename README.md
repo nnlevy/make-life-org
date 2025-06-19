@@ -18,10 +18,11 @@ The Durable Object instance that manages the chat room runs in one location, and
 
 ## Tandem Accounts
 
-The `Tandem` durable object stores a shared to-do list and discussion prompts
-for partners. Use it to track joint habits like taking multivitamins or
-exercising, and to spark conversations about finances, childcare and career
-plans. Each partner can view the list and add items from their own perspective.
+The `Tandem` durable object stores data for a shared "tandem" account. It keeps
+track of joint to-dos, conversation prompts and short notes from each partner.
+Use it for daily habits like taking multivitamins or exercising together. Add
+prompts to tackle important topics such as finances, division of childcare or
+career plans. Both partners can attach notes from their own perspective.
 
 ### API
 
@@ -32,6 +33,8 @@ Send HTTP requests to `/parties/tandem/<name>` to manage shared tasks and prompt
 - `PUT /todos/<id>` – update or mark complete
 - `DELETE /todos/<id>` – remove a todo
 - `GET /prompts` – fetch discussion prompts
+- `GET /notes?partner=<name>` – list notes for a partner
+- `POST /notes?partner=<name>` – add `{ text: "..." }`
 
 ## Getting Started
 
