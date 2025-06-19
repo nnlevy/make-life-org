@@ -76,3 +76,14 @@ export type PartnerContent = {
   partner: string;
   text: string;
 };
+
+export type PRIQuestion = {
+  id: string;
+  text: string;
+};
+
+export type PRIAnswer = {
+  questionId: string;
+  partner: string;
+  score: number; // 1-5 scale
+};

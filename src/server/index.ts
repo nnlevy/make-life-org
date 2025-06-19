@@ -101,6 +101,12 @@ export class Tandem extends Server<Env> {
       text: "Remember to support each other on this journey.",
     },
   ];
+  priQuestions = [
+    { id: "commitment", text: "We both feel ready for commitment." },
+    { id: "support", text: "We have a reliable support network." },
+    { id: "finances", text: "Our finances can handle a child." },
+  ];
+  priAnswers: { questionId: string; partner: string; score: number }[] = [];
 
   onStart() {
     this.ctx.storage.sql.exec(
@@ -114,6 +120,9 @@ export class Tandem extends Server<Env> {
     );
     this.ctx.storage.sql.exec(
       `CREATE TABLE IF NOT EXISTS contents (id TEXT PRIMARY KEY, partner TEXT, text TEXT)`,
+    );
+    this.ctx.storage.sql.exec(
+      `CREATE TABLE IF NOT EXISTS pri_answers (questionId TEXT, partner TEXT, score INTEGER, PRIMARY KEY(questionId, partner))`,
     );
     this.todos = this.ctx.storage.sql
       .exec(`SELECT * FROM todos`)
@@ -147,6 +156,10 @@ export class Tandem extends Server<Env> {
     } else {
       this.contents = savedContent;
     }
+
+    this.priAnswers = this.ctx.storage.sql
+      .exec(`SELECT * FROM pri_answers`)
+      .toArray() as unknown as { questionId: string; partner: string; score: number }[];
   }
 
   async onRequest(request: Request): Promise<Response> {
@@ -235,6 +248,39 @@ export class Tandem extends Server<Env> {
           )})`,
         );
         return Response.json(contentItem);
+      }
+    }
+    if (parts[0] === "pri") {
+      const partner = url.searchParams.get("partner") || "default";
+      if (parts[1] === "questions" && request.method === "GET") {
+        return Response.json({ questions: this.priQuestions });
+      }
+      if (request.method === "GET") {
+        const answers = this.priAnswers.filter((a) => a.partner === partner);
+        let score = 0;
+        if (answers.length) {
+          const total = answers.reduce((sum, a) => sum + a.score, 0);
+          score = Math.round((total / (this.priQuestions.length * 5)) * 100);
+        }
+        return Response.json({ score, answers });
+      }
+      if (request.method === "POST") {
+        const data: any = await request.json();
+        const { questionId, score } = data;
+        if (!questionId || typeof score !== "number")
+          return new Response("Bad Request", { status: 400 });
+        const existingIndex = this.priAnswers.findIndex(
+          (a) => a.partner === partner && a.questionId === questionId,
+        );
+        if (existingIndex !== -1) {
+          this.priAnswers[existingIndex].score = score;
+        } else {
+          this.priAnswers.push({ questionId, partner, score });
+        }
+        this.ctx.storage.sql.exec(
+          `INSERT INTO pri_answers (questionId, partner, score) VALUES ('${questionId}', '${partner}', ${score}) ON CONFLICT(questionId, partner) DO UPDATE SET score=${score}`,
+        );
+        return Response.json({ ok: true });
       }
     }
     return new Response("Not Found", { status: 404 });

@@ -18,6 +18,7 @@ import {
   type Prompt,
   type PartnerNote,
   type PartnerContent,
+  type PRIQuestion,
 } from "../shared";
 
 function App() {
@@ -135,6 +136,8 @@ function TandemApp() {
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [notes, setNotes] = useState<PartnerNote[]>([]);
   const [content, setContent] = useState<PartnerContent[]>([]);
+  const [questions, setQuestions] = useState<PRIQuestion[]>([]);
+  const [priScore, setPriScore] = useState<number>(0);
 
   async function refresh() {
     const todoRes = await fetch(`/parties/tandem/${name}/todos`);
@@ -153,6 +156,12 @@ function TandemApp() {
     );
     const contentData = await contentRes.json();
     setContent(contentData.content as PartnerContent[]);
+    const qRes = await fetch(`/parties/tandem/${name}/pri/questions`);
+    const qData = await qRes.json();
+    setQuestions(qData.questions as PRIQuestion[]);
+    const scoreRes = await fetch(`/parties/tandem/${name}/pri?partner=${partner}`);
+    const scoreData = await scoreRes.json();
+    setPriScore(scoreData.score as number);
   }
 
   useEffect(() => {
@@ -187,6 +196,17 @@ function TandemApp() {
     );
     const note = (await res.json()) as PartnerNote;
     setNotes((n) => [...n, note]);
+  }
+
+  async function answerQuestion(questionId: string, score: number) {
+    await fetch(`/parties/tandem/${name}/pri?partner=${partner}`, {
+      method: "POST",
+      body: JSON.stringify({ questionId, score }),
+    });
+    const updated = await (
+      await fetch(`/parties/tandem/${name}/pri?partner=${partner}`)
+    ).json();
+    setPriScore(updated.score as number);
   }
 
   return (
@@ -249,6 +269,25 @@ function TandemApp() {
         <input type="text" name="note" placeholder="Add a note" />
         <button type="submit">Add</button>
       </form>
+      <h4 style={{ marginTop: "2rem" }}>Readiness Score: {priScore}</h4>
+      <ul>
+        {questions.map((q) => (
+          <li key={q.id}>
+            {q.text}
+            {[1, 2, 3, 4, 5].map((v) => (
+              <label key={v} style={{ marginLeft: "0.5rem" }}>
+                <input
+                  type="radio"
+                  name={`q-${q.id}`}
+                  value={v}
+                  onChange={() => answerQuestion(q.id, v)}
+                />
+                {v}
+              </label>
+            ))}
+          </li>
+        ))}
+      </ul>
       <h4 style={{ marginTop: "2rem" }}>Content for {partner}</h4>
       <ul>
         {content.map((c) => (

@@ -39,6 +39,9 @@ You can also visit `/tandem/<name>?partner=<you>` in the browser to try the buil
 - `POST /notes?partner=<name>` – add `{ text: "..." }`
 - `GET /content?partner=<name>` – partner-specific tips and links
 - `POST /content?partner=<name>` – add new partner content
+- `GET /pri/questions` – list PRI questions
+- `GET /pri?partner=<name>` – fetch readiness score
+- `POST /pri?partner=<name>` – submit `{ questionId, score }`
 
 ## Getting Started
 
