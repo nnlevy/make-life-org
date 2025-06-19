@@ -23,6 +23,16 @@ for partners. Use it to track joint habits like taking multivitamins or
 exercising, and to spark conversations about finances, childcare and career
 plans. Each partner can view the list and add items from their own perspective.
 
+### API
+
+Send HTTP requests to `/parties/tandem/<name>` to manage shared tasks and prompts.
+
+- `GET /todos` – list todos
+- `POST /todos` – add `{ content: "text" }`
+- `PUT /todos/<id>` – update or mark complete
+- `DELETE /todos/<id>` – remove a todo
+- `GET /prompts` – fetch discussion prompts
+
 ## Getting Started
 
 Outside of this repo, you can start a new project with this template using [C3](https://developers.cloudflare.com/pages/get-started/c3/) (the `create-cloudflare` CLI):
