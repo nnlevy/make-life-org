@@ -1,6 +1,6 @@
 import { createRoot } from "react-dom/client";
 import { usePartySocket } from "partysocket/react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   BrowserRouter,
   Routes,
@@ -10,7 +10,14 @@ import {
 } from "react-router";
 import { nanoid } from "nanoid";
 
-import { names, type ChatMessage, type Message } from "../shared";
+import {
+  names,
+  type ChatMessage,
+  type Message,
+  type TodoItem,
+  type Prompt,
+  type PartnerNote,
+} from "../shared";
 
 function App() {
   const [name] = useState(names[Math.floor(Math.random() * names.length)]);
@@ -119,12 +126,133 @@ function App() {
   );
 }
 
+function TandemApp() {
+  const { name } = useParams();
+  const partner = new URLSearchParams(window.location.search).get("partner") ||
+    "default";
+  const [todos, setTodos] = useState<TodoItem[]>([]);
+  const [prompts, setPrompts] = useState<Prompt[]>([]);
+  const [notes, setNotes] = useState<PartnerNote[]>([]);
+
+  async function refresh() {
+    const todoRes = await fetch(`/parties/tandem/${name}/todos`);
+    const todosData = await todoRes.json();
+    setTodos(todosData.todos as TodoItem[]);
+    const promptRes = await fetch(`/parties/tandem/${name}/prompts`);
+    const promptData = await promptRes.json();
+    setPrompts(promptData.prompts as Prompt[]);
+    const noteRes = await fetch(
+      `/parties/tandem/${name}/notes?partner=${partner}`,
+    );
+    const noteData = await noteRes.json();
+    setNotes(noteData.notes as PartnerNote[]);
+  }
+
+  useEffect(() => {
+    refresh();
+  }, [name, partner]);
+
+  async function addTodo(content: string) {
+    const res = await fetch(`/parties/tandem/${name}/todos`, {
+      method: "POST",
+      body: JSON.stringify({ content }),
+    });
+    const item = (await res.json()) as TodoItem;
+    setTodos((t) => [...t, item]);
+  }
+
+  async function toggleTodo(t: TodoItem) {
+    const res = await fetch(`/parties/tandem/${name}/todos/${t.id}`, {
+      method: "PUT",
+      body: JSON.stringify({ completed: !t.completed }),
+    });
+    const item = (await res.json()) as TodoItem;
+    setTodos((tds) => tds.map((todo) => (todo.id === item.id ? item : todo)));
+  }
+
+  async function addNote(text: string) {
+    const res = await fetch(
+      `/parties/tandem/${name}/notes?partner=${partner}`,
+      {
+        method: "POST",
+        body: JSON.stringify({ text }),
+      },
+    );
+    const note = (await res.json()) as PartnerNote;
+    setNotes((n) => [...n, note]);
+  }
+
+  return (
+    <div className="container" style={{ marginTop: "2rem" }}>
+      <h4>Todos</h4>
+      <ul>
+        {todos.map((t) => (
+          <li key={t.id}>
+            <label>
+              <input
+                type="checkbox"
+                checked={t.completed}
+                onChange={() => toggleTodo(t)}
+              />
+              {" "}
+              {t.content}
+            </label>
+          </li>
+        ))}
+      </ul>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          const input = e.currentTarget.elements.namedItem(
+            "todo",
+          ) as HTMLInputElement;
+          if (input.value.trim()) {
+            addTodo(input.value.trim());
+            input.value = "";
+          }
+        }}
+      >
+        <input type="text" name="todo" placeholder="Add a todo" />
+        <button type="submit">Add</button>
+      </form>
+      <h4 style={{ marginTop: "2rem" }}>Discussion Prompts</h4>
+      <ul>
+        {prompts.map((p) => (
+          <li key={p.id}>{p.text}</li>
+        ))}
+      </ul>
+      <h4 style={{ marginTop: "2rem" }}>Notes for {partner}</h4>
+      <ul>
+        {notes.map((n) => (
+          <li key={n.id}>{n.text}</li>
+        ))}
+      </ul>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          const input = e.currentTarget.elements.namedItem(
+            "note",
+          ) as HTMLInputElement;
+          if (input.value.trim()) {
+            addNote(input.value.trim());
+            input.value = "";
+          }
+        }}
+      >
+        <input type="text" name="note" placeholder="Add a note" />
+        <button type="submit">Add</button>
+      </form>
+    </div>
+  );
+}
+
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 createRoot(document.getElementById("root")!).render(
   <BrowserRouter>
     <Routes>
-      <Route path="/" element={<Navigate to={`/${nanoid()}`} />} />
-      <Route path="/:room" element={<App />} />
+      <Route path="/" element={<Navigate to={`/chat/${nanoid()}`} />} />
+      <Route path="/chat/:room" element={<App />} />
+      <Route path="/tandem/:name" element={<TandemApp />} />
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   </BrowserRouter>,
